@@ -13,8 +13,6 @@ import re
 # ---------- GLOBAL VARIABLES ---------------
 
 
-MY_GUILD = discord.Object(id=751205392121331752) # The Manping Club Server
-
 decks = [] # global variable to store deck objects
 games = [] # global variable to store game objects
 
@@ -37,8 +35,9 @@ class MyClient(discord.Client):
 
     async def setup_hook(self) -> None:
         # Sync the application command with Discord.
-        self.tree.copy_global_to(guild=MY_GUILD)
-        await self.tree.sync(guild=MY_GUILD)
+        SERVER_ID = discord.Object(id=config.guild_id)
+        self.tree.copy_global_to(guild=SERVER_ID)
+        await self.tree.sync(guild=SERVER_ID)
 
 
 class Deck:
@@ -60,7 +59,18 @@ class Game:
         self.decks = decks
 
     def __str__(self):
-        return f"{str(self.date)[:10]} {' vs '.join(self.decks)} **Win {self.winner}**"
+        # return f"{str(self.date)[:10]} {' vs '.join(self.decks)} **Win {self.winner}**"
+        return f"**{self.winner} (Win)**  vs  {'  vs  '.join([x for x in self.decks if x != self.winner])}"
+
+
+class PlayerSelect(discord.ui.Select):
+    def __init__(self, parent_view):
+        options = [discord.SelectOption(label=player) for player in set([x.owner for x in decks])]
+        super().__init__(placeholder='Who played? Select 4 players', options=options, min_values=4, max_values=4)
+        self.parent_view = parent_view
+
+    async def callback(self, interaction: discord.Interaction):
+        await self.parent_view.add_dropdowns(interaction)
 
 
 class DeckSelect(discord.ui.Select):
@@ -73,18 +83,19 @@ class DeckSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         # check to see if we have a selection for each player
         if all([x.values for x in self.parent_view.deck_select]):
-            await self.parent_view.log_game(interaction)
+            await self.parent_view.pick_winner(interaction)
         else:
             await interaction.response.defer()
+        
 
-
-class PlayerSelect(discord.ui.UserSelect):
+class WinnerSelect(discord.ui.Select):
     def __init__(self, parent_view):
-        super().__init__(min_values=4,max_values=4)
         self.parent_view = parent_view
-
+        options = [discord.SelectOption(label=x) for x in self.parent_view.selected_decks]
+        super().__init__(placeholder='Select the winner', options=options)
+        
     async def callback(self, interaction: discord.Interaction):
-        await self.parent_view.add_dropdowns(interaction)
+        await self.parent_view.log_game(interaction)
 
 
 class RegisterGameView(discord.ui.View):
@@ -96,38 +107,49 @@ class RegisterGameView(discord.ui.View):
     async def add_dropdowns(self, interaction: discord.Interaction):
         '''Adds additional dropdowns to the view based on players selected'''
 
+        # Remove player selection dropdown
+        self.remove_item(self.player_select)
+
         # Add a new dropdown menu for each player (owner) that was selected
-        selected_players = [x.name for x in self.player_select.values]
-        self.deck_select = [DeckSelect(player, self) for player in selected_players]
+        self.deck_select = [DeckSelect(player, self) for player in self.player_select.values]
         for ea in self.deck_select:
             self.add_item(ea)
 
-        # Remove player selection dropdown as we don't need it anymore (optional)
-        self.remove_item(self.player_select)
-        
         # update view
         await interaction.response.edit_message(view=self)
 
-    async def log_game(self, interaction: discord.Interaction):
-        '''Called once all 4 decks have been selected to log the game'''
+    async def pick_winner(self, interaction: discord.Interaction):
+        '''Add dropdown to select the winner'''
 
-        # Identify the winner
-
-        # add game
-        game = Game(
-            date = interaction.message.created_at,
-            winner = self.deck_select[0].values[0],
-            decks = [x.values[0] for x in self.deck_select]
-            )
-        games.append(game)
+        # Set attribute to use in log_game method and WinnerSelect class
+        self.selected_decks = [x.values[0] for x in self.deck_select]
         
         # Remove dropdowns and update view
         for ea in self.deck_select:
             self.remove_item(ea)
 
-        await interaction.response.edit_message(content=game,view=self)
+        # Add winner dropdown
+        self.winner_select = WinnerSelect(self)
+        self.add_item(self.winner_select)
 
-            
+        await interaction.response.edit_message(view=self)
+
+    async def log_game(self, interaction: discord.Interaction):
+        '''Called once all decks and winner have been selected to log the game'''
+        
+        # remove winner select dropdown
+        self.remove_item(self.winner_select)
+
+        game = Game(
+            date = interaction.message.created_at,
+            winner = self.winner_select.values[0],
+            decks = self.selected_decks
+            )
+        games.append(game)
+
+        await interaction.response.edit_message(content=game,view=self)
+        
+
 # ---------- FUNCTION DEFINITIONS ---------------
 
 
