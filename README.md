@@ -1,4 +1,4 @@
-# MTG-Discord-Bot-V2
+# Hall of Records Bot
 
 This is the follow on to the original hall of records bot.
 
