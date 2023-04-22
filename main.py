@@ -1,43 +1,27 @@
 import discord
 from discord import app_commands
-import json
 import config
-
-import requests
-from bs4 import BeautifulSoup
-import functools
-import asyncio
-import re
+import deckstats
 
 
 # ---------- GLOBAL VARIABLES ---------------
 
 
-decks = [] # global variable to store deck objects
-games = [] # global variable to store game objects
+players = []
+decks = []
+games = []
 
 
 # ---------- CLASS DEFINITIONS ---------------
 
 
-class MyClient(discord.Client):
-    def __init__(self) -> None:
-        super().__init__(intents=discord.Intents.default())
-        # We need an `discord.app_commands.CommandTree` instance
-        # to register application commands (slash commands in this case)
-        self.tree = app_commands.CommandTree(self)
-
-    async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-
-        # load decks from local decks.json file
-        pull_decks_from_database(config.deck_path)
-
-    async def setup_hook(self) -> None:
-        # Sync the application command with Discord.
-        SERVER_ID = discord.Object(id=config.guild_id)
-        self.tree.copy_global_to(guild=SERVER_ID)
-        await self.tree.sync(guild=SERVER_ID)
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.rating = 1500
+        self.gold = 0
+        self.wins = None
+        self.losses = None
 
 
 class Deck:
@@ -59,10 +43,29 @@ class Game:
         self.decks = decks
 
     def __str__(self):
-        # return f"{str(self.date)[:10]} {' vs '.join(self.decks)} **Win {self.winner}**"
         return f"**{self.winner} (Win)**  vs  {'  vs  '.join([x for x in self.decks if x != self.winner])}"
 
 
+class MyClient(discord.Client):
+    def __init__(self) -> None:
+        super().__init__(intents=discord.Intents.default())
+        # We need an `discord.app_commands.CommandTree` instance
+        # to register application commands (slash commands in this case)
+        self.tree = app_commands.CommandTree(self)
+
+    async def on_ready(self):
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+
+        # load decks from local decks.json file
+        pull_decks_from_database(config.deck_path)
+
+    async def setup_hook(self) -> None:
+        # Sync the application command with Discord.
+        SERVER_ID = discord.Object(id=config.guild_id)
+        self.tree.copy_global_to(guild=SERVER_ID)
+        await self.tree.sync(guild=SERVER_ID)
+
+        
 class PlayerSelect(discord.ui.Select):
     def __init__(self, parent_view):
         options = [discord.SelectOption(label=player) for player in set([x.owner for x in decks])]
@@ -153,70 +156,12 @@ class RegisterGameView(discord.ui.View):
 # ---------- FUNCTION DEFINITIONS ---------------
 
 
-def read_file(path):
-    '''Read json data from a file'''
-    with open(path, 'r') as f:
-        data = json.load(f)
-    return data
-
-
 def pull_decks_from_database(path):
-    database = read_file(path)
+    database = deckstats.read_file(path)
     for owner, commanders in database.items():
         for commander in commanders:
             decks.append(Deck(owner,commander))
     print(f'Loaded {len(decks)} decks from {path}.')
-
-
-# def to_thread(func):
-#     @functools.wraps(func)
-#     async def wrapper(*args, **kwargs):
-#         return await asyncio.to_thread(func, *args, **kwargs)
-#     return wrapper
-
-
-# @to_thread
-# def registerDecks(deck_links: dict):
-
-#     def getCommanderName(link: str):
-
-#         headers = {'User-Agent': 'python-requests/2.28.2',
-#                    'Accept': 'text/html'}
-#         response = requests.get(link, headers=headers)
-
-#         if response.status_code//100 != 2:
-#             return response
-        
-#         soup = BeautifulSoup(response.text, 'html.parser')
-
-#         if link.startswith('https://www.mtggoldfish.com'):
-#             # For mtggoldfish links, the commander is in an input element
-#             commander_element = soup.find('input', {'name': 'deck_input[commander]'})
-#             partner_element = soup.find('input', {'name': 'deck_input[commander_alt]'})
-#             if partner_element.get('value') is None:
-#                 return commander_element.get('value')
-#             else:
-#                 return commander_element.get('value') + ' / ' + partner_element.get('value')
-#         elif link.startswith('https://www.moxfield.com'):
-#             # For moxfield links, the commander is in the title element
-#             title = soup.find('title').text
-#             # Return text between parentheses
-#             return title[title.index('Commander (') + 11:title.index(')')]
-#         else:
-#             return 'I can only process www.mtggoldfish.com or www.moxfield.com links at this time.'
-
-#     # Replace links with Commander Names in deck_links
-#     count = 0
-#     for links in deck_links.values():
-#         count += len(links)
-#         for i in range(len(links)):
-#             links[i] = getCommanderName(links[i])
-
-#     # Write new dictionary to the decks database
-#     with open(config.deck_path, 'w') as f:
-#         f.write(json.dumps(decks, indent=4))
-
-#     return count
 
 
 # ---------- DISCORD BOT SLASH COMMANDS ---------------
