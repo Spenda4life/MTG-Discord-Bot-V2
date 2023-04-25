@@ -2,9 +2,9 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
-import functools
+# import functools
 import asyncio
-import re
+# import re
 
 
 def elo(k_factor: int, d_factor: int, ratings: list):
@@ -41,21 +41,17 @@ def write_file(data, path):
         f.write(json.dumps(data, indent=4))
 
 
-# def to_thread(func):
-#     @functools.wraps(func)
-#     async def wrapper(*args, **kwargs):
-#         return await asyncio.to_thread(func, *args, **kwargs)
-#     return wrapper
+def to_thread(func):
+    # @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        return await asyncio.to_thread(func, *args, **kwargs)
+    return wrapper
 
 
-# @to_thread
-# def registerDecks(deck_links: dict):
-#     # Replace links with Commander Names in deck_links
-#     count = 0
-#     for links in deck_links.values():
-#         count += len(links)
-#         for i in range(len(links)):
-#             links[i] = getCommanderName(links[i])
+@to_thread
+def registerDecks(owner, links):
+    for link in links:
+        commander = getCommanderName(link)
 
 
 def getCommanderName(link: str):

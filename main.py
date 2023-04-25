@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 import config
 import deckstats
+import re
 
 
 # ---------- GLOBAL VARIABLES ---------------
@@ -25,9 +26,10 @@ class Player:
 
 
 class Deck:
-    def __init__(self, owner, commander):
+    def __init__(self, owner, commander, decklist):
         self.owner = owner
         self.commander = commander
+        self.decklsit = decklist
         self.rating = 1500
         self.wins = None
         self.losses = None
@@ -170,24 +172,23 @@ def pull_decks_from_database(path):
 client = MyClient()
 
 
-# @client.tree.command()
-# async def update_decks(interaction: discord.Interaction):
-#     '''Register decks based on decklist links in #decklists channel'''
-#     channel = client.get_channel(907783732033896479)
-#     deck_links = {}
-#     async for message in channel.history(limit=None):
-#         # Use the regular expression to find links in each message
-#         deck_links[message.author.name] = re.findall(r"(?P<url>https?://[^\s]+)", message.content)
-
-#     count = await registerDecks(deck_links)
-#     await interaction.response.send_message(f'{count} decks registered from #decklists channel', ephemeral=True)
+@client.tree.command()
+async def pull_decks(interaction: discord.Interaction):
+    '''Register decks based on decklist links in #decklists channel'''
+    channel = client.get_channel(config.decklist_channel)
+    async for message in channel.history(limit=None):
+        owner = message.author.name
+        # Use the regular expression to find links in each message
+        links = re.findall(r"(?P<url>https?://[^\s]+)", message.content)
+        for link in links:
+            decks.append(Deck(owner, deckstats.getCommanderName(link), link))
 
 
 @client.tree.command()
 async def game(interaction: discord.Interaction):
     """Create a dropdown menu to record a new 4 player game"""
     view = RegisterGameView()
-    await interaction.response.send_message(view=view)
+    await interaction.response.send_message(view=view, ephemeral=True)
 
 
 client.run(config.discord_token)
