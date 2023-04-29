@@ -21,8 +21,8 @@ class Player:
         self.name = name
         self.rating = 1500
         self.gold = 0
-        self.wins = None
-        self.losses = None
+        self.wins = 0
+        self.losses = 0
 
 
 class Deck:
@@ -31,8 +31,8 @@ class Deck:
         self.commander = commander
         self.decklsit = decklist
         self.rating = 1500
-        self.wins = None
-        self.losses = None
+        self.wins = 0
+        self.losses = 0
 
     def __str__(self):
         return f'{self.commander} ({self.owner})'
@@ -191,4 +191,5 @@ async def game(interaction: discord.Interaction):
     await interaction.response.send_message(view=view, ephemeral=True)
 
 
-client.run(config.discord_token)
+if __name__=='__main__':
+    client.run(config.discord_token)

@@ -1,19 +1,17 @@
 import json
 import requests
 from bs4 import BeautifulSoup
-
 # import functools
 import asyncio
-# import re
 
 
-def elo(k_factor: int, d_factor: int, ratings: list):
-    '''Function takes two or more ratings, with the winner's rating first, and returns new ratings'''
+def elo(k_factor: int, d_factor: int, ratings: list, winner_indx: int):
+    '''Function takes two or more ratings and returns new ratings'''
 
     new_ratings = []
     for indx, rating in enumerate(ratings):
-        # Basic elo equation is rating + k_factor * (1 - ev)
-        new_ratings.append(round(rating + k_factor * ((indx == 0) - multi_ev(d_factor, ratings, indx))))
+        new_ratings.append(
+             round(rating + k_factor * ((indx == winner_indx) - multi_ev(d_factor, ratings, indx))))
 
     return new_ratings
 
