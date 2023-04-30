@@ -1,8 +1,6 @@
 import json
 import requests
 from bs4 import BeautifulSoup
-import config
-import asyncio
 
 
 def elo(k_factor: int, d_factor: int, ratings: list, winner_indx: int):
@@ -37,16 +35,6 @@ def write_file(data, path):
     '''Write json data to a file'''
     with open(path, 'w') as f:
         f.write(json.dumps(data, indent=4))
-
-
-# def register_decks(decklist_links: dict):
-#     commanders = {owner: [get_commander_name(link) for link in links] 
-#                   for owner, links in decklist_links.items()}
-#     # write new dict to file
-#     path = f'{config.current_dir}\\decks.json'
-#     write_file(commanders, path)
-#     number_of_decks = sum(len(items) for items in commanders.values())
-#     print(f'Saved {number_of_decks} decks to {path}')
 
 
 def get_commander_name(link: str):

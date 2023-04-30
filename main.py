@@ -135,12 +135,11 @@ class RegisterGameView(discord.ui.View):
         # remove winner select dropdown
         self.remove_item(self.winner_select)
 
-        game = Game(
+        game = add_game(
             date = interaction.message.created_at,
             winner = self.winner_select.values[0],
             decks = self.selected_decks
             )
-        games.append(game)
 
         await interaction.response.edit_message(content=game,view=self)
         
@@ -155,8 +154,8 @@ def startup():
     global decks
     global games
 
-    # players = []
-    # games = []
+    players = []
+    games = []
 
     # load decks from local json file
     decks = [Deck(**deck) for deck in deckstats.read_file(config.deck_path)]
@@ -166,24 +165,37 @@ def startup():
 async def load_decks_from_discord():
     """Use links in #decklists channel to load decks"""
 
+    new_links = 0
     channel = client.get_channel(config.decklist_channel)
     async for message in channel.history(limit=None):
         # Use the regular expression to find links in each message
         for link in re.findall(r"(?P<url>https?://[^\s]+)", message.content):
-            links = [deck.decklist for deck in decks]
-            if link in links:
-                print(f'{link} already exists in deck database')
-            else:
+            if link not in [deck.decklist for deck in decks]:
                 # if a new link is found, get commander and add new deck
+                new_links += 1
                 commander = deckstats.get_commander_name(link)
                 new_deck = Deck(owner=message.author.name, commander=commander, 
                                 decklist=link, rating=1500, wins=0, losses=0)
                 decks.append(new_deck)
-                print(f'New deck registered: {new_deck}')
 
-    # save decks to json file
-    deckstats.write_file([deck.__dict__ for deck in decks], config.deck_path)
-    return f'Saved {len(decks)} decks to {config.deck_path}'
+    if new_links > 0:
+        # save decks to json file
+        deckstats.write_file([deck.__dict__ for deck in decks], config.deck_path)
+        return f'{new_links} new deck(s) added to deck database'
+    else:
+        return 'No new decklists found'
+
+
+def add_game(date, winner, decks):
+    """Add a new game to the database"""
+    game = Game(
+        date = date,
+        winner = winner,
+        decks = decks
+        )
+    games.append(game)
+    deckstats.write_file([game.__dict__ for game in games], config.game_path)
+    return game
 
 
 # ---------- DISCORD BOT SLASH COMMANDS ---------------
@@ -197,7 +209,7 @@ async def pull_decks(interaction: discord.Interaction):
     """Get decklist links in #decklists channel"""
 
     await interaction.response.send_message(
-        'Loading decks from #decklists channel. This might take a minute.', 
+        'Loading decks from #decklists channel', 
         ephemeral=True)
     response = await load_decks_from_discord()
     await interaction.followup.send(response, ephemeral=True)
