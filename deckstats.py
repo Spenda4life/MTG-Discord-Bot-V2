@@ -1,7 +1,7 @@
 import json
 import requests
 from bs4 import BeautifulSoup
-# import functools
+import config
 import asyncio
 
 
@@ -39,20 +39,18 @@ def write_file(data, path):
         f.write(json.dumps(data, indent=4))
 
 
-def to_thread(func):
-    # @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        return await asyncio.to_thread(func, *args, **kwargs)
-    return wrapper
+# def register_decks(decklist_links: dict):
+#     commanders = {owner: [get_commander_name(link) for link in links] 
+#                   for owner, links in decklist_links.items()}
+#     # write new dict to file
+#     path = f'{config.current_dir}\\decks.json'
+#     write_file(commanders, path)
+#     number_of_decks = sum(len(items) for items in commanders.values())
+#     print(f'Saved {number_of_decks} decks to {path}')
 
 
-@to_thread
-def registerDecks(owner, links):
-    for link in links:
-        commander = getCommanderName(link)
-
-
-def getCommanderName(link: str):
+def get_commander_name(link: str):
+    """Takes a decklist link and return the name of the commander"""
 
     headers = {'User-Agent': 'python-requests/2.28.2',
                 'Accept': 'text/html'}
@@ -65,21 +63,32 @@ def getCommanderName(link: str):
 
     if link.startswith('https://www.mtggoldfish.com'):
         # For mtggoldfish links, the commander is in an input element
-        commander_element = soup.find('input', {'name': 'deck_input[commander]'})
-        partner_element = soup.find('input', {'name': 'deck_input[commander_alt]'})
-        if partner_element.get('value') is None:
-            return commander_element.get('value')
+
+        commander_element = soup.find(
+            'input', {'name': 'deck_input[commander]'})
+        partner_element = soup.find(
+            'input', {'name': 'deck_input[commander_alt]'})
+        
+        commander_name = commander_element.get('value')
+        partner_name = partner_element.get('value')
+
+        if partner_name is None:
+            return commander_name
         else:
-            return commander_element.get('value') + ' / ' + partner_element.get('value')
+            # return commander_element.get('value') + ' / ' + partner_element.get('value')
+            return f"{commander_name} / {partner_name}"
+        
     elif link.startswith('https://www.moxfield.com'):
         # For moxfield links, the commander is in the title element
         title = soup.find('title').text
         # Return text between parentheses
         return title[title.index('Commander (') + 11:title.index(')')]
+    
     else:
         return 'I can only process www.mtggoldfish.com or www.moxfield.com links at this time.'
 
 
 if __name__=='__main__':
+    # testing
     ratings = [1500,1600,1700,1800]
-    print(elo(60,400,ratings))
+    print(elo(60,400,ratings,0))
