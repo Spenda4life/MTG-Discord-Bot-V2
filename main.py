@@ -50,7 +50,14 @@ class MyClient(discord.Client):
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
-        startup()
+
+        # load decks from local json file
+        self.decks = [Deck(**deck) for deck in deckstats.read_file(config.deck_path)]
+        print(f'Loaded {len(self.decks)} decks from {config.deck_path}')
+
+        # load games from local json file
+        self.games = [Game(**game) for game in deckstats.read_file(config.game_path)]
+        print(f'Loaded {len(self.games)} games from {config.game_path}')
 
     async def setup_hook(self) -> None:
         # Sync the application command with Discord.
@@ -61,7 +68,7 @@ class MyClient(discord.Client):
         
 class PlayerSelect(discord.ui.Select):
     def __init__(self, parent_view):
-        options = [discord.SelectOption(label=player) for player in set([x.owner for x in decks])]
+        options = [discord.SelectOption(label=player) for player in set([x.owner for x in client.decks])]
         super().__init__(placeholder='Who played? Select 4 players', options=options, min_values=4, max_values=4)
         self.parent_view = parent_view
 
@@ -71,7 +78,7 @@ class PlayerSelect(discord.ui.Select):
 
 class DeckSelect(discord.ui.Select):
     def __init__(self, player, parent_view):
-        player_decks = [x.commander for x in decks if x.owner == player]
+        player_decks = [x.commander for x in client.decks if x.owner == player]
         options = [discord.SelectOption(label=deck) for deck in player_decks]
         super().__init__(placeholder=f"Select a {player} deck", options=options, min_values=1, max_values=1)
         self.parent_view = parent_view
@@ -142,33 +149,19 @@ class RegisterGameView(discord.ui.View):
         # dict(zip(self.player_select.values, self.selected_decks))
 
         # add game to games
-        games.append(Game(
+        client.games.append(Game(
             date = interaction.message.created_at.strftime('%m-%d-%Y'),
             winner = self.winner_select.values[0],
             decks = self.selected_decks))
         
-        # # write to game database
-        # deckstats.write_file([game.__dict__ for game in games], config.game_path)
+        # write to game database
+        deckstats.write_file([game.__dict__ for game in games], config.game_path)
 
-        await interaction.response.edit_message(content=games[-1],view=self)
-        print(games[-1])
+        await interaction.response.edit_message(content=client.games[-1],view=self)
+        print(f'New game added: {client.games[-1]}')
         
 
 # ---------- FUNCTION DEFINITIONS ---------------
-
-
-def startup():
-    """Called when bot first starts"""
-
-    # load decks from local json file
-    global decks
-    decks = [Deck(**deck) for deck in deckstats.read_file(config.deck_path)]
-    print(f'Loaded {len(decks)} decks from {config.deck_path}')
-
-    # load games from local json file
-    global games
-    games = [Game(**game) for game in deckstats.read_file(config.game_path)]
-    print(f'Loaded {len(games)} games from {config.game_path}')
 
 
 async def load_decks_from_discord():
@@ -179,17 +172,17 @@ async def load_decks_from_discord():
     async for message in channel.history(limit=None):
         # Use the regular expression to find links in each message
         for link in re.findall(r"(?P<url>https?://[^\s]+)", message.content):
-            if link not in [deck.decklist for deck in decks]:
+            if link not in [deck.decklist for deck in client.decks]:
                 # if a new link is found, get commander and add new deck
                 new_links += 1
                 commander = deckstats.get_commander_name(link)
                 new_deck = Deck(owner=message.author.name, commander=commander, 
                                 decklist=link, rating=1500, wins=0, losses=0)
-                decks.append(new_deck)
+                client.decks.append(new_deck)
 
     if new_links > 0:
         # save decks to json file
-        deckstats.write_file([deck.__dict__ for deck in decks], config.deck_path)
+        deckstats.write_file([deck.__dict__ for deck in client.decks], config.deck_path)
         return f'{new_links} new deck(s) added to deck database'
     else:
         return 'No new decklists found'
