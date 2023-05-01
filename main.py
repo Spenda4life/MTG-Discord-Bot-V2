@@ -3,6 +3,7 @@ from discord import app_commands
 import config
 import deckstats
 import re
+from datetime import datetime
 
 
 # ---------- CLASS DEFINITIONS ---------------
@@ -136,7 +137,7 @@ class RegisterGameView(discord.ui.View):
         self.remove_item(self.winner_select)
 
         game = add_game(
-            date = interaction.message.created_at,
+            date = interaction.message.created_at.strftime('%m-%d-%Y'),
             winner = self.winner_select.values[0],
             decks = self.selected_decks
             )
@@ -150,16 +151,15 @@ class RegisterGameView(discord.ui.View):
 def startup():
     """Called when bot first starts"""
 
-    global players
-    global decks
-    global games
-
-    players = []
-    games = []
-
     # load decks from local json file
+    global decks
     decks = [Deck(**deck) for deck in deckstats.read_file(config.deck_path)]
     print(f'Loaded {len(decks)} decks from {config.deck_path}')
+
+    # load games from local json file
+    global games
+    games = [Game(**game) for game in deckstats.read_file(config.game_path)]
+    print(f'Loaded {len(games)} games from {config.game_path}')
 
 
 async def load_decks_from_discord():

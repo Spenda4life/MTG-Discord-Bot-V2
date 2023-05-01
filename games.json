@@ -1,0 +1,52 @@
+[
+    {
+        "date": "04-19-2023",
+        "winner": "Thantis, the Warweaver",
+        "decks": [
+            "Grismold, the Dreadsower",
+            "Mahadi, Emporium Master",
+            "Thantis, the Warweaver",
+            "Jolene, the Plunder Queen"
+        ]
+    },
+    {
+        "date": "04-21-2023",
+        "winner": "Grenzo, Dungeon Warden",
+        "decks": [
+            "Karlach, Fury of Avernus / Guild Artisan",
+            "Miirym, Sentinel Wyrm",
+            "Be'lakor, the Dark Master",
+            "Grenzo, Dungeon Warden"
+        ]
+    },
+    {
+        "date": "04-22-2023",
+        "winner": "Miirym, Sentinel Wyrm",
+        "decks": [
+            "Karlach, Fury of Avernus / Guild Artisan",
+            "Miirym, Sentinel Wyrm",
+            "Be'lakor, the Dark Master",
+            "Grenzo, Dungeon Warden"
+        ]
+    },
+    {
+        "date": "04-28-2023",
+        "winner": "Prosper, Tome-Bound",
+        "decks": [
+            "Evelyn, the Covetous",
+            "Kitt Kanto, Mayhem Diva",
+            "Zurgo Helmsmasher",
+            "Prosper, Tome-Bound"
+        ]
+    },
+    {
+        "date": "04-29-2023",
+        "winner": "Grismold, the Dreadsower",
+        "decks": [
+            "Grismold, the Dreadsower",
+            "Breena, the Demagogue",
+            "Zurgo Helmsmasher",
+            "Jon Irenicus, Shattered One"
+        ]
+    }
+]
