@@ -136,13 +136,22 @@ class RegisterGameView(discord.ui.View):
         # remove winner select dropdown
         self.remove_item(self.winner_select)
 
-        game = add_game(
+        # take player and commander names and find the correct deck object
+        # self.player_select.values = ['gzy', 'DrSull', 'ostertoaster10', 'Spenda4life'] 
+        # self.selected_decks = ['Breena, the Demagogue', 'Najeela, the Blade-Blossom', 'Prossh, Skyraider of Kher', 'Ghired, Conclave Exile']
+        # dict(zip(self.player_select.values, self.selected_decks))
+
+        # add game to games
+        games.append(Game(
             date = interaction.message.created_at.strftime('%m-%d-%Y'),
             winner = self.winner_select.values[0],
-            decks = self.selected_decks
-            )
+            decks = self.selected_decks))
+        
+        # # write to game database
+        # deckstats.write_file([game.__dict__ for game in games], config.game_path)
 
-        await interaction.response.edit_message(content=game,view=self)
+        await interaction.response.edit_message(content=games[-1],view=self)
+        print(games[-1])
         
 
 # ---------- FUNCTION DEFINITIONS ---------------
@@ -184,18 +193,6 @@ async def load_decks_from_discord():
         return f'{new_links} new deck(s) added to deck database'
     else:
         return 'No new decklists found'
-
-
-def add_game(date, winner, decks):
-    """Add a new game to the database"""
-    game = Game(
-        date = date,
-        winner = winner,
-        decks = decks
-        )
-    games.append(game)
-    deckstats.write_file([game.__dict__ for game in games], config.game_path)
-    return game
 
 
 # ---------- DISCORD BOT SLASH COMMANDS ---------------
