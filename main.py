@@ -155,7 +155,7 @@ class RegisterGameView(discord.ui.View):
             decks = self.selected_decks))
         
         # write to game database
-        deckstats.write_file([game.__dict__ for game in games], config.game_path)
+        deckstats.write_file([game.__dict__ for game in client.games], config.game_path)
 
         await interaction.response.edit_message(content=client.games[-1],view=self)
         print(f'New game added: {client.games[-1]}')
