@@ -1,6 +1,7 @@
 import json
 import requests
 from bs4 import BeautifulSoup
+import random
 
 
 def elo(k_factor: int, d_factor: int, ratings: list, winner_indx: int):
@@ -76,7 +77,15 @@ def get_commander_name(link: str):
         return 'I can only process www.mtggoldfish.com or www.moxfield.com links at this time.'
 
 
+def roll(dice: str):
+    """Rolls a dice in NdN format."""
+    try:
+        rolls, limit = map(int, dice.split('d'))
+    except Exception:
+        return 'Format has to be in NdN!'
+
+    return ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
+
+
 if __name__=='__main__':
-    # testing
-    ratings = [1500,1600,1700,1800]
-    print(elo(60,400,ratings,0))
+    print(roll('2d6'))
