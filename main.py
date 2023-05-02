@@ -161,12 +161,20 @@ class RegisterGameView(discord.ui.View):
         print(f'New game added: {client.games[-1]}')
         
 
-# ---------- FUNCTION DEFINITIONS ---------------
+# ---------- DISCORD BOT SLASH COMMANDS ---------------
 
 
-async def load_decks_from_discord():
-    """Use links in #decklists channel to load decks"""
+client = MyClient()
 
+
+@client.tree.command()
+async def pull_decks(interaction: discord.Interaction):
+    """Add decks from decklist links in #decklists channel"""
+
+    await interaction.response.send_message(
+        'Loading decks from #decklists channel', 
+        ephemeral=True)
+    
     new_links = 0
     channel = client.get_channel(config.decklist_channel)
     async for message in channel.history(limit=None):
@@ -183,25 +191,10 @@ async def load_decks_from_discord():
     if new_links > 0:
         # save decks to json file
         deckstats.write_file([deck.__dict__ for deck in client.decks], config.deck_path)
-        return f'{new_links} new deck(s) added to deck database'
+        response = f'{new_links} new deck(s) added to deck database'
     else:
-        return 'No new decklists found'
-
-
-# ---------- DISCORD BOT SLASH COMMANDS ---------------
-
-
-client = MyClient()
-
-
-@client.tree.command()
-async def pull_decks(interaction: discord.Interaction):
-    """Get decklist links in #decklists channel"""
-
-    await interaction.response.send_message(
-        'Loading decks from #decklists channel', 
-        ephemeral=True)
-    response = await load_decks_from_discord()
+        response = 'No new decklists found'
+    
     await interaction.followup.send(response, ephemeral=True)
 
 
