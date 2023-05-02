@@ -187,7 +187,10 @@ async def pull_decks(interaction: discord.Interaction):
         # save decks to json file
         deckstats.write_file([deck.__dict__ for deck in client.decks], config.deck_path)
         response = f'{new_links} new deck(s) added to deck database'
+        response = f'{new_links} new deck(s) added to deck database'
     else:
+        response = 'No new decklists found'
+    
         response = 'No new decklists found'
     
     await interaction.followup.send(response, ephemeral=True)
