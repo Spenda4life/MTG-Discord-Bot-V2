@@ -4,6 +4,7 @@ import config
 import deckstats
 import re
 from datetime import datetime
+import os
 
 
 # ---------- CLASS DEFINITIONS ---------------
@@ -52,12 +53,14 @@ class MyClient(discord.Client):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
 
         # load decks from local json file
-        self.decks = [Deck(**deck) for deck in deckstats.read_file(config.deck_path)]
-        print(f'Loaded {len(self.decks)} decks from {config.deck_path}')
+        path = f'{os.path.dirname(__file__)}\decks.json'
+        self.decks = [Deck(**deck) for deck in deckstats.read_file(path)]
+        print(f'Loaded {len(self.decks)} decks')
 
         # load games from local json file
-        self.games = [Game(**game) for game in deckstats.read_file(config.game_path)]
-        print(f'Loaded {len(self.games)} games from {config.game_path}')
+        path = f'{os.path.dirname(__file__)}\games.json'
+        self.games = [Game(**game) for game in deckstats.read_file(path)]
+        print(f'Loaded {len(self.games)} games')
 
     async def setup_hook(self) -> None:
         # Sync the application command with Discord.
@@ -150,7 +153,8 @@ class RegisterGameView(discord.ui.View):
             decks = self.selected_decks))
         
         # write to game database
-        deckstats.write_file([game.__dict__ for game in client.games], config.game_path)
+        path = f'{os.path.dirname(__file__)}\games.json'
+        deckstats.write_file([game.__dict__ for game in client.games], path)
 
         await interaction.response.edit_message(content=client.games[-1],view=self)
         print(f'New game added: {client.games[-1]}')
@@ -185,7 +189,8 @@ async def pull_decks(interaction: discord.Interaction):
 
     if new_links > 0:
         # save decks to json file
-        deckstats.write_file([deck.__dict__ for deck in client.decks], config.deck_path)
+        path = f'{os.path.dirname(__file__)}\decks.json'
+        deckstats.write_file([deck.__dict__ for deck in client.decks], path)
         response = f'{new_links} new deck(s) added to deck database'
         response = f'{new_links} new deck(s) added to deck database'
     else:
