@@ -10,12 +10,6 @@ class Deck():
     self.losses = 0
 
 
-def pseudo_norm(min, max, scale):
-  """Generate a value in a normal distribution"""
-  values = sum([random.randint(min, max) for x in range(scale)])
-  return round(values / scale)
-
-
 def simulate_game():
   """Randomly pick 4 decks and select a winner"""
   
