@@ -3,43 +3,10 @@ from discord import app_commands
 import config
 import deckstats
 import re
-from datetime import datetime
-import os
+# from datetime import datetime
 
 
 # ---------- CLASS DEFINITIONS ---------------
-
-
-class Player:
-    def __init__(self, name):
-        self.name = name
-        self.rating = 1500
-        self.gold = 0
-        self.wins = 0
-        self.losses = 0
-
-
-class Deck:
-    def __init__(self, owner, commander, decklist, rating, wins, losses):
-        self.owner = owner
-        self.commander = commander
-        self.decklist = decklist
-        self.rating = rating
-        self.wins = wins
-        self.losses = losses
-
-    def __str__(self):
-        return f'{self.commander} ({self.owner})'
-
-
-class Game:
-    def __init__(self, date, winner, decks):
-        self.date = date
-        self.winner = winner
-        self.decks = decks
-
-    def __str__(self):
-        return f"**{self.winner} (Win)**  vs  {'  vs  '.join([x for x in self.decks if x != self.winner])}"
 
 
 class MyClient(discord.Client):
@@ -52,21 +19,19 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
 
-        # load decks from local json file
-        path = f'{os.path.dirname(__file__)}\decks.json'
-        self.decks = [Deck(**deck) for deck in deckstats.read_file(path)]
-        print(f'Loaded {len(self.decks)} decks')
-
-        # load games from local json file
-        path = f'{os.path.dirname(__file__)}\games.json'
-        self.games = [Game(**game) for game in deckstats.read_file(path)]
-        print(f'Loaded {len(self.games)} games')
+        # load objects from json files
+        self.decks = deckstats.load_json_data('decks.json',deckstats.Deck)
+        self.games = deckstats.load_json_data('games.json',deckstats.Game)
 
     async def setup_hook(self) -> None:
         # Sync the application command with Discord.
         SERVER_ID = discord.Object(id=config.guild_id)
         self.tree.copy_global_to(guild=SERVER_ID)
         await self.tree.sync(guild=SERVER_ID)
+
+        TEST_SERVER = discord.Object(id=config.test_guild)
+        self.tree.copy_global_to(guild=TEST_SERVER)
+        await self.tree.sync(guild=TEST_SERVER)
 
         
 class PlayerSelect(discord.ui.Select):
@@ -147,15 +112,14 @@ class RegisterGameView(discord.ui.View):
         self.remove_item(self.winner_select)
 
         # add game to games
-        client.games.append(Game(
+        client.games.append(deckstats.Game(
             date = interaction.message.created_at.strftime('%m-%d-%Y'),
             winner = self.winner_select.values[0],
             decks = self.selected_decks))
         
         # write to game database
-        path = f'{os.path.dirname(__file__)}\games.json'
-        deckstats.write_file([game.__dict__ for game in client.games], path)
-
+        deckstats.save_to_json(client.games,'games.json')
+        
         await interaction.response.edit_message(content=client.games[-1],view=self)
         print(f'New game added: {client.games[-1]}')
 
@@ -183,22 +147,18 @@ async def pull_decks(interaction: discord.Interaction):
                 # if a new link is found, get commander and add new deck
                 new_links += 1
                 commander = deckstats.get_commander_name(link)
-                new_deck = Deck(owner=message.author.name, commander=commander, 
+                new_deck = deckstats.Deck(owner=message.author.name, commander=commander, 
                                 decklist=link, rating=1500, wins=0, losses=0)
                 client.decks.append(new_deck)
 
     if new_links > 0:
         # save decks to json file
-        path = f'{os.path.dirname(__file__)}\decks.json'
-        deckstats.write_file([deck.__dict__ for deck in client.decks], path)
-        response = f'{new_links} new deck(s) added to deck database'
+        deckstats.save_to_json(client.decks, 'decks.json')
         response = f'{new_links} new deck(s) added to deck database'
     else:
         response = 'No new decklists found'
     
-        response = 'No new decklists found'
-    
-    await interaction.followup.send(response, ephemeral=True)
+    await interaction.edit_original_response(content=response)
 
 
 @client.tree.command()

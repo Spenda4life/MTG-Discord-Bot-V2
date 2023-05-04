@@ -2,6 +2,64 @@ import json
 import requests
 from bs4 import BeautifulSoup
 import random
+import os
+
+
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.rating = 1500
+        self.gold = 0
+        self.wins = 0
+        self.losses = 0
+
+
+class Deck:
+    def __init__(self, owner, commander, decklist, rating, wins, losses):
+        self.owner = owner
+        self.commander = commander
+        self.decklist = decklist
+        self.rating = rating
+        self.wins = wins
+        self.losses = losses
+
+    def __str__(self):
+        return f'{self.commander} ({self.owner})'
+
+
+class Game:
+    def __init__(self, date, winner, decks):
+        self.date = date
+        self.winner = winner
+        self.decks = decks
+
+    def __str__(self):
+        return f"**{self.winner} (Win)**  vs  {'  vs  '.join([x for x in self.decks if x != self.winner])}"
+
+
+def load_json_data(file_name, cls):
+    """Load json data to class objects"""
+    path = f'{os.path.dirname(__file__)}\{file_name}'
+    return [cls(**obj) for obj in read_file(path)]
+
+
+def save_to_json(objects: list, file_name):
+    """Save list of class objects to json file"""
+    path = f'{os.path.dirname(__file__)}\{file_name}'
+    write_file([deck.__dict__ for deck in objects], path)
+
+
+def read_file(path):
+    '''Read json data from a file'''
+    with open(path, 'r') as f:
+        data = json.load(f)
+    return data
+
+
+def write_file(data, path):
+    '''Write json data to a file'''
+    with open(path, 'w') as f:
+        f.write(json.dumps(data, indent=4))
 
 
 def elo(k_factor: int, d_factor: int, ratings: list, winner_indx: int):
@@ -23,19 +81,6 @@ def multi_ev(d_factor: int, ratings: list, indx: int):
             sum_ev += 1 / (1 + 10 ** ((rating - ratings[indx]) / d_factor)) if i != indx else 0
 
         return sum_ev / (len(ratings) * (len(ratings) - 1) / 2)
-
-
-def read_file(path):
-    '''Read json data from a file'''
-    with open(path, 'r') as f:
-        data = json.load(f)
-    return data
-
-
-def write_file(data, path):
-    '''Write json data to a file'''
-    with open(path, 'w') as f:
-        f.write(json.dumps(data, indent=4))
 
 
 def get_commander_name(link: str):
@@ -88,4 +133,9 @@ def roll(dice: str):
 
 
 if __name__=='__main__':
-    print(roll('2d6'))
+
+    for deck in load_json_data('decks.json', Deck):
+        print(deck)
+
+    for game in load_json_data('games.json', Game):
+        print(game)
