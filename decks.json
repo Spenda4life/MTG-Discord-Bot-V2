@@ -438,5 +438,37 @@
         "rating": 1500,
         "wins": 0,
         "losses": 0
+    },
+    {
+        "owner": "WVPV",
+        "commander": "Henzie \"Toolbox\" Torre",
+        "decklist": "https://www.moxfield.com/decks/j4dZP5F4AEmA_oUoUf-hXg",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
+    },
+    {
+        "owner": "WVPV",
+        "commander": "Faldorn, Dread Wolf Herald",
+        "decklist": "https://www.moxfield.com/decks/PNMMvRlP3ES_ww_EsGSHnQ",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
+    },
+    {
+        "owner": "WVPV",
+        "commander": "Wilhelt, the Rotcleaver",
+        "decklist": "https://www.moxfield.com/decks/tUHX1TlLQ0CU6V4WLN4DoA",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
+    },
+    {
+        "owner": "WVPV",
+        "commander": "Rin and Seri, Inseparable",
+        "decklist": "https://www.moxfield.com/decks/qxRnaomshkeXn9JBV4dnUg",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
     }
 ]

@@ -208,5 +208,12 @@ async def game(interaction: discord.Interaction):
     await interaction.response.send_message(view=view)
 
 
+@client.tree.command()
+@app_commands.describe(dice='Enter dice in NdN format')
+async def roll(interaction: discord.Interaction, dice: str):
+    """Rolls a dice in NdN format."""
+    await interaction.response.send_message(f'{dice}:  {deckstats.roll(dice)}')
+
+
 if __name__=='__main__':
     client.run(config.discord_token)
