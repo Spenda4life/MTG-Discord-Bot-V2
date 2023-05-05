@@ -172,7 +172,17 @@ async def game(interaction: discord.Interaction):
 @app_commands.describe(dice='Enter dice in NdN format')
 async def roll(interaction: discord.Interaction, dice: str):
     """Rolls a dice in NdN format."""
-    await interaction.response.send_message(f'{dice}:  {deckstats.roll(dice)}')
+    await interaction.response.send_message(
+        f'{dice}:  {deckstats.roll(dice)}')
+
+
+@client.tree.command()
+@app_commands.describe(query='Enter a scryfall search query')
+async def scryfall(interaction: discord.Interaction, query: str):
+    """Search scryfall"""
+    result_limit = 5
+    await interaction.response.send_message(
+        f'{deckstats.scryfall_search(query, result_limit)}')
 
 
 if __name__=='__main__':

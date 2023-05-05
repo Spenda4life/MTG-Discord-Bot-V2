@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import random
 import os
+import time
 
 
 class Player:
@@ -132,10 +133,27 @@ def roll(dice: str):
     return ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
 
 
+def scryfall_search(query, limit):
+    # delay for scryfall API rate limit
+    time.sleep(0.05) 
+    # Format text for query url and send the GET request
+    query.replace(' ', '+').replace(':', '%3A')
+    response = requests.get(f'https://api.scryfall.com/cards/search?q={query}')
+    response_json = response.json()
+    output = ''
+    for card in [card['id'] for card in response_json['data']][:limit]:
+        text = requests.get(f'https://api.scryfall.com/cards/{card}?format=text&pretty=true')
+        output += f'{text.text}\n\n'
+    return output[:2000]
+
+
 if __name__=='__main__':
 
-    for deck in load_json_data('decks.json', Deck):
-        print(deck)
+    # for deck in load_json_data('decks.json', Deck):
+    #     print(deck)
 
-    for game in load_json_data('games.json', Game):
-        print(game)
+    # for game in load_json_data('games.json', Game):
+    #     print(game)
+
+    query = 'Blast'
+    print(scryfall_search(query, 5))
