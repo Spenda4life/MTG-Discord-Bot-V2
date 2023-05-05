@@ -176,14 +176,5 @@ async def roll(interaction: discord.Interaction, dice: str):
         f'{dice}:  {deckstats.roll(dice)}')
 
 
-@client.tree.command()
-@app_commands.describe(query='Enter a scryfall search query')
-async def scryfall(interaction: discord.Interaction, query: str):
-    """Search scryfall"""
-    result_limit = 5
-    await interaction.response.send_message(
-        f'{deckstats.scryfall_search(query, result_limit)}')
-
-
 if __name__=='__main__':
     client.run(config.discord_token)
