@@ -3,7 +3,6 @@ from discord import app_commands
 import config
 import deckstats
 import re
-# from datetime import datetime
 
 
 # ---------- CLASS DEFINITIONS ---------------
@@ -19,16 +18,12 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
 
-        # load objects from json files
-        self.decks = deckstats.load_json_data('decks.json',deckstats.Deck)
-        self.games = deckstats.load_json_data('games.json',deckstats.Game)
-
     async def setup_hook(self) -> None:
         # Sync the application command with Discord.
         SERVER_ID = discord.Object(id=config.guild_id)
         self.tree.copy_global_to(guild=SERVER_ID)
         await self.tree.sync(guild=SERVER_ID)
-
+        # Private server for testing
         TEST_SERVER = discord.Object(id=config.test_guild)
         self.tree.copy_global_to(guild=TEST_SERVER)
         await self.tree.sync(guild=TEST_SERVER)
@@ -36,7 +31,7 @@ class MyClient(discord.Client):
         
 class PlayerSelect(discord.ui.Select):
     def __init__(self, parent_view):
-        options = [discord.SelectOption(label=player) for player in set([x.owner for x in client.decks])]
+        options = [discord.SelectOption(label=player) for player in set([x.owner for x in parent_view.decks])]
         super().__init__(placeholder='Who played? Select 4 players', options=options, min_values=4, max_values=4)
         self.parent_view = parent_view
 
@@ -46,7 +41,7 @@ class PlayerSelect(discord.ui.Select):
 
 class DeckSelect(discord.ui.Select):
     def __init__(self, player, parent_view):
-        player_decks = [x.commander for x in client.decks if x.owner == player]
+        player_decks = [x.commander for x in parent_view.decks if x.owner == player]
         options = [discord.SelectOption(label=deck) for deck in player_decks]
         super().__init__(placeholder=f"Select a {player} deck", options=options, min_values=1, max_values=1)
         self.parent_view = parent_view
@@ -72,9 +67,10 @@ class WinnerSelect(discord.ui.Select):
 class RegisterGameView(discord.ui.View):
     def __init__(self):
         super().__init__()
+        self.decks = deckstats.load_json_data('decks.json',deckstats.Deck)
         self.player_select = PlayerSelect(self)
         self.add_item(self.player_select)
-
+        
     async def add_dropdowns(self, interaction: discord.Interaction):
         '''Adds additional dropdowns to the view based on players selected'''
 
@@ -111,17 +107,13 @@ class RegisterGameView(discord.ui.View):
         # remove winner select dropdown
         self.remove_item(self.winner_select)
 
-        # add game to games
-        client.games.append(deckstats.Game(
-            date = interaction.message.created_at.strftime('%m-%d-%Y'),
-            winner = self.winner_select.values[0],
-            decks = self.selected_decks))
-        
-        # write to game database
-        deckstats.save_to_json(client.games,'games.json')
-        
-        await interaction.response.edit_message(content=client.games[-1],view=self)
-        print(f'New game added: {client.games[-1]}')
+        new_game = deckstats.register_game(
+            date=interaction.message.created_at.strftime('%m-%d-%Y'), 
+            winner=self.winner_select.values[0],
+            decks=self.selected_decks
+            )
+
+        await interaction.response.edit_message(content=new_game,view=self)
 
 
 # ---------- DISCORD BOT SLASH COMMANDS ---------------
@@ -137,29 +129,31 @@ async def pull_decks(interaction: discord.Interaction):
     await interaction.response.send_message(
         'Loading decks from #decklists channel', 
         ephemeral=True)
+    
+    decks = deckstats.load_json_data(
+        'decks.json', deckstats.Deck)
+    start_count = len(decks)
 
-    new_links = 0
     channel = client.get_channel(config.decklist_channel)
     async for message in channel.history(limit=None):
         # Use the regular expression to find links in each message
         for link in re.findall(r"(?P<url>https?://[^\s]+)", message.content):
-            if link not in [deck.decklist for deck in client.decks]:
-                # if a new link is found, get commander and add new deck
-                new_links += 1
+            if link not in [deck.decklist for deck in decks]:
                 commander = deckstats.get_commander_name(link)
-                new_deck = deckstats.Deck(owner=message.author.name, commander=commander, 
-                                decklist=link, rating=1500, wins=0, losses=0)
-                client.decks.append(new_deck)
-
-    if new_links > 0:
-        # save decks to json file
-        deckstats.save_to_json(client.decks, 'decks.json')
-        response = f'{new_links} new deck(s) added to deck database'
-    else:
-        response = 'No new decklists found'
+                decks.append(deckstats.Deck(
+                    owner=message.author.name,
+                    commander=commander,
+                    decklist=link
+                    ))
     
-    await interaction.edit_original_response(content=response)
-
+    number_of_new_decks = len(decks) - start_count
+    if number_of_new_decks > 0:
+        deckstats.save_to_json(decks, 'decks.json')
+        await interaction.edit_original_response(
+            f'{number_of_new_decks} new deck(s) added to deck database')
+    else:
+        await interaction.edit_original_response('No new decklists found')
+    
 
 @client.tree.command()
 async def game(interaction: discord.Interaction):

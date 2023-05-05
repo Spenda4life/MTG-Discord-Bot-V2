@@ -16,7 +16,8 @@ class Player:
 
 
 class Deck:
-    def __init__(self, owner, commander, decklist, rating, wins, losses):
+    def __init__(self, owner, commander, decklist, 
+                 rating=1500, wins=0, losses=0):
         self.owner = owner
         self.commander = commander
         self.decklist = decklist
@@ -36,6 +37,15 @@ class Game:
 
     def __str__(self):
         return f"**{self.winner} (Win)**  vs  {'  vs  '.join([x for x in self.decks if x != self.winner])}"
+
+
+def register_game(date, winner, decks):
+    """Wrtie new game to json file"""
+    games = load_json_data('games.json', Game)
+    new_game = Game(date,winner,decks)
+    games.append(new_game)
+    save_to_json(games,'games.json')
+    return new_game
 
 
 def load_json_data(file_name, cls):
@@ -148,12 +158,8 @@ def roll(dice: str):
 
 
 if __name__=='__main__':
+    print('***Testing***')
 
-    # for deck in load_json_data('decks.json', Deck):
-    #     print(deck)
-
-    # for game in load_json_data('games.json', Game):
-    #     print(game)
-
-    # query = 'Blast'
-    # print(scryfall_search(query, 5))
+    decks = load_json_data('decks.json', Deck)
+    games = load_json_data('games.json', Game)
+    print(f'Successfully loaded {len(decks)} decks and {len(games)} games from database.')
