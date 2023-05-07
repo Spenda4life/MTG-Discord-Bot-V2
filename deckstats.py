@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import random
 import os
-import time
+import random
 
 
 class Player:
@@ -141,6 +141,14 @@ def roll(dice: str):
         return 'Format has to be in NdN!'
 
     return ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
+
+
+def random_decks(decks: list[object], players=None):
+    """Returns a random decks for each player"""
+    if players == None:
+        players = random.sample(list(set([x.owner for x in decks])), k=4)
+
+    return [random.choice([deck for deck in decks if deck.owner == player]) for player in players]
 
 
 # def scryfall_search(query, limit):

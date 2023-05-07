@@ -3,6 +3,7 @@ from discord import app_commands
 import config
 import deckstats
 import re
+import simulate
 
 
 # ---------- CLASS DEFINITIONS ---------------
@@ -28,15 +29,15 @@ class MyClient(discord.Client):
         self.tree.copy_global_to(guild=TEST_SERVER)
         await self.tree.sync(guild=TEST_SERVER)
 
-        
+  
 class PlayerSelect(discord.ui.Select):
     def __init__(self, parent_view):
         options = [discord.SelectOption(label=player) for player in set([x.owner for x in parent_view.decks])]
-        super().__init__(placeholder='Who played? Select 4 players', options=options, min_values=4, max_values=4)
+        super().__init__(placeholder='Select players', options=options, min_values=2, max_values=4)
         self.parent_view = parent_view
 
     async def callback(self, interaction: discord.Interaction):
-        await self.parent_view.add_dropdowns(interaction)
+        await self.parent_view.process_selection(interaction)
 
 
 class DeckSelect(discord.ui.Select):
@@ -71,7 +72,7 @@ class RegisterGameView(discord.ui.View):
         self.player_select = PlayerSelect(self)
         self.add_item(self.player_select)
         
-    async def add_dropdowns(self, interaction: discord.Interaction):
+    async def process_selection(self, interaction: discord.Interaction):
         '''Adds additional dropdowns to the view based on players selected'''
 
         # Remove player selection dropdown
@@ -115,6 +116,23 @@ class RegisterGameView(discord.ui.View):
 
         await interaction.response.edit_message(content=new_game,view=self)
 
+
+class RandomView(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.decks = deckstats.load_json_data('decks.json',deckstats.Deck)
+        self.player_select = PlayerSelect(self)
+        self.add_item(self.player_select)
+
+    async def process_selection(self, interaction: discord.Interaction):
+        self.remove_item(self.player_select)
+
+        decks = deckstats.load_json_data('decks.json', deckstats.Deck)
+        random_decks = deckstats.random_decks(decks, self.player_select.values)
+        response = '  vs  '.join([deck.commander for deck in random_decks])
+
+        await interaction.response.edit_message(content=response,view=self)
+        
 
 # ---------- DISCORD BOT SLASH COMMANDS ---------------
 
@@ -168,6 +186,12 @@ async def roll(interaction: discord.Interaction, dice: str):
     """Rolls a dice in NdN format."""
     await interaction.response.send_message(
         f'{dice}:  {deckstats.roll(dice)}')
+    
+
+@client.tree.command()
+async def random(interaction: discord.Interaction):
+    view = RandomView()
+    await interaction.response.send_message(view=view)
 
 
 if __name__=='__main__':

@@ -48,5 +48,35 @@
             "Zurgo Helmsmasher",
             "Jon Irenicus, Shattered One"
         ]
+    },
+    {
+        "date": "05-06-2023",
+        "winner": "Grenzo, Dungeon Warden",
+        "decks": [
+            "Najeela, the Blade-Blossom",
+            "Grenzo, Dungeon Warden",
+            "Wort, the Raidmother",
+            "Ixhel, Scion of Atraxa"
+        ]
+    },
+    {
+        "date": "05-06-2023",
+        "winner": "Mahadi, Emporium Master",
+        "decks": [
+            "Mahadi, Emporium Master",
+            "Xyris, the Writhing Storm",
+            "Kaervek the Merciless",
+            "Sharuum the Hegemon"
+        ]
+    },
+    {
+        "date": "05-06-2023",
+        "winner": "Reyhan, Last of the Abzan / Alena, Kessig Trapper",
+        "decks": [
+            "Reyhan, Last of the Abzan / Alena, Kessig Trapper",
+            "Ghired, Conclave Exile",
+            "Gix, Yawgmoth Praetor",
+            "Optimus Prime, Hero // Optimus Prime, Autobot Leader"
+        ]
     }
 ]

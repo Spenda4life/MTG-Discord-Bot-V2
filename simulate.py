@@ -23,10 +23,10 @@ def simulate_game(decks: list[object]):
     else:
       deck.losses += 1
 
+if __name__ == '__main__':
+  decks = deckstats.load_json_data('decks.json', deckstats.Deck)
+  for _ in range(100):
+    simulate_game(decks)
 
-decks = deckstats.load_json_data('decks.json', deckstats.Deck)
-for _ in range(100):
-  simulate_game(decks)
-
-for indx, deck in enumerate(sorted(decks, key=lambda x: x.wins, reverse=True)):
-  print(indx + 1, deck, deck.wins, deck.losses)
+  for indx, deck in enumerate(sorted(decks, key=lambda x: x.wins, reverse=True)):
+    print(indx + 1, deck, deck.wins, deck.losses)
