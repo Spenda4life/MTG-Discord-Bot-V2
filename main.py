@@ -3,7 +3,6 @@ from discord import app_commands
 import config
 import deckstats
 import re
-import simulate
 
 
 # ---------- CLASS DEFINITIONS ---------------
@@ -31,9 +30,9 @@ class MyClient(discord.Client):
 
   
 class PlayerSelect(discord.ui.Select):
-    def __init__(self, parent_view):
+    def __init__(self, parent_view, min_selections):
         options = [discord.SelectOption(label=player) for player in set([x.owner for x in parent_view.decks])]
-        super().__init__(placeholder='Select players', options=options, min_values=2, max_values=4)
+        super().__init__(placeholder='Select players', options=options, min_values=min_selections, max_values=4)
         self.parent_view = parent_view
 
     async def callback(self, interaction: discord.Interaction):
@@ -69,7 +68,7 @@ class RegisterGameView(discord.ui.View):
     def __init__(self):
         super().__init__()
         self.decks = deckstats.load_json_data('decks.json',deckstats.Deck)
-        self.player_select = PlayerSelect(self)
+        self.player_select = PlayerSelect(self, 4)
         self.add_item(self.player_select)
         
     async def process_selection(self, interaction: discord.Interaction):
@@ -121,7 +120,7 @@ class RandomView(discord.ui.View):
     def __init__(self):
         super().__init__()
         self.decks = deckstats.load_json_data('decks.json',deckstats.Deck)
-        self.player_select = PlayerSelect(self)
+        self.player_select = PlayerSelect(self, 1)
         self.add_item(self.player_select)
 
     async def process_selection(self, interaction: discord.Interaction):
