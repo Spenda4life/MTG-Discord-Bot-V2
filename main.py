@@ -127,8 +127,7 @@ class RandomView(discord.ui.View):
     async def process_selection(self, interaction: discord.Interaction):
         self.remove_item(self.player_select)
 
-        decks = deckstats.load_json_data('decks.json', deckstats.Deck)
-        random_decks = deckstats.random_decks(decks, self.player_select.values)
+        random_decks = deckstats.random_decks(self.decks, self.player_select.values)
         response = '  vs  '.join([deck.commander for deck in random_decks])
 
         await interaction.response.edit_message(content=response,view=self)

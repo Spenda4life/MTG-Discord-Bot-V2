@@ -78,5 +78,25 @@
             "Gix, Yawgmoth Praetor",
             "Optimus Prime, Hero // Optimus Prime, Autobot Leader"
         ]
+    },
+    {
+        "date": "05-07-2023",
+        "winner": "Mondrak, Glory Dominus",
+        "decks": [
+            "Mondrak, Glory Dominus",
+            "Kynaios and Tiro of Meletis",
+            "Feldon of the Third Path",
+            "Jolene, the Plunder Queen"
+        ]
+    },
+    {
+        "date": "05-07-2023",
+        "winner": "Grenzo, Dungeon Warden",
+        "decks": [
+            "Grenzo, Dungeon Warden",
+            "Rielle, the Everwise",
+            "Optimus Prime, Hero // Optimus Prime, Autobot Leader",
+            "Ardenn, Intrepid Archaeologist / Kraum, Ludevic's Opus"
+        ]
     }
 ]
