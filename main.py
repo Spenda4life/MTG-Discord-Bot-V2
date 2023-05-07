@@ -190,6 +190,7 @@ async def roll(interaction: discord.Interaction, dice: str):
 
 @client.tree.command()
 async def random(interaction: discord.Interaction):
+    """Pick random decks owned by the selected players"""
     view = RandomView()
     await interaction.response.send_message(view=view)
 
