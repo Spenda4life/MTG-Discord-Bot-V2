@@ -98,5 +98,45 @@
             "Optimus Prime, Hero // Optimus Prime, Autobot Leader",
             "Ardenn, Intrepid Archaeologist / Kraum, Ludevic's Opus"
         ]
+    },
+    {
+        "date": "05-20-2023",
+        "winner": "Faldorn, Dread Wolf Herald",
+        "decks": [
+            "Faldorn, Dread Wolf Herald",
+            "Xyris, the Writhing Storm",
+            "Breena, the Demagogue",
+            "Zevlor, Elturel Exile"
+        ]
+    },
+    {
+        "date": "05-21-2023",
+        "winner": "Kenessos, Priest of Thassa",
+        "decks": [
+            "Sidar Jabari of Zhalfir",
+            "Kenessos, Priest of Thassa",
+            "Thantis, the Warweaver",
+            "Xyris, the Writhing Storm"
+        ]
+    },
+    {
+        "date": "06-03-2023",
+        "winner": "Ghired, Conclave Exile",
+        "decks": [
+            "Gix, Yawgmoth Praetor",
+            "Ghired, Conclave Exile",
+            "Zopandrel, Hunger Dominus",
+            "Zevlor, Elturel Exile"
+        ]
+    },
+    {
+        "date": "06-03-2023",
+        "winner": "Prosper, Tome-Bound",
+        "decks": [
+            "Jolene, the Plunder Queen",
+            "Rielle, the Everwise",
+            "Karlach, Fury of Avernus / Guild Artisan",
+            "Prosper, Tome-Bound"
+        ]
     }
 ]

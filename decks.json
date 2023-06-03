@@ -470,5 +470,29 @@
         "rating": 1500,
         "wins": 0,
         "losses": 0
+    },
+    {
+        "owner": "gzy",
+        "commander": "Sidar Jabari of Zhalfir",
+        "decklist": "https://www.moxfield.com/decks/QYfM2_EDZkW5rkJrurTwig",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
+    },
+    {
+        "owner": "DrSull",
+        "commander": "Kenessos, Priest of Thassa",
+        "decklist": "https://www.moxfield.com/decks/N22WpoMHZkiWwIqLI1SVRQ",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
+    },
+    {
+        "owner": "Xenkyro",
+        "commander": "Zevlor, Elturel Exile",
+        "decklist": "https://www.moxfield.com/decks/IYh2Jh0_30if1u6BODOGaQ",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
     }
 ]

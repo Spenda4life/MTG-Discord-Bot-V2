@@ -7,12 +7,13 @@ import random
 
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, rating=1500, 
+                 gold=0, wins=0, losses=0):
         self.name = name
-        self.rating = 1500
-        self.gold = 0
-        self.wins = 0
-        self.losses = 0
+        self.rating = rating
+        self.gold = gold
+        self.wins = wins
+        self.losses = losses
 
 
 class Deck:
@@ -144,7 +145,7 @@ def roll(dice: str):
 
 
 def random_decks(decks: list[object], players=None):
-    """Returns a random decks for each player"""
+    """Returns a random deck for each player"""
     if players == None:
         players = random.sample(list(set([x.owner for x in decks])), k=4)
 
