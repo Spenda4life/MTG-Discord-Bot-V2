@@ -138,5 +138,25 @@
             "Karlach, Fury of Avernus / Guild Artisan",
             "Prosper, Tome-Bound"
         ]
+    },
+    {
+        "date": "07-22-2023",
+        "winner": "Optimus Prime, Hero // Optimus Prime, Autobot Leader",
+        "decks": [
+            "Optimus Prime, Hero // Optimus Prime, Autobot Leader",
+            "Maarika, Brutal Gladiator",
+            "Xyris, the Writhing Storm",
+            "Henzie \"Toolbox\" Torre"
+        ]
+    },
+    {
+        "date": "07-22-2023",
+        "winner": "Henzie \"Toolbox\" Torre",
+        "decks": [
+            "Henzie \"Toolbox\" Torre",
+            "Lord of the Nazgul",
+            "Evelyn, the Covetous",
+            "Mahadi, Emporium Master"
+        ]
     }
 ]

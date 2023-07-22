@@ -494,5 +494,21 @@
         "rating": 1500,
         "wins": 0,
         "losses": 0
+    },
+    {
+        "owner": "gzy",
+        "commander": "Maarika, Brutal Gladiator",
+        "decklist": "https://www.moxfield.com/decks/FNDlV49QjkmActsN9avW2A",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
+    },
+    {
+        "owner": "Xenkyro",
+        "commander": "Lord of the Nazgul",
+        "decklist": "https://www.moxfield.com/decks/uP-I88LTkkuBt2dpem4IvQ",
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
     }
 ]
