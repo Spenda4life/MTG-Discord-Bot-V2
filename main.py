@@ -142,10 +142,8 @@ client = MyClient()
 async def pull_decks(interaction: discord.Interaction):
     """Add decks from decklist links in #decklists channel"""
 
-    await interaction.response.send_message(
-        'Loading decks from #decklists channel', 
-        ephemeral=True)
-    
+    print('Pulling deck links from #decklists channel.')
+
     decks = deckstats.load_json_data(
         'decks.json', deckstats.Deck)
     start_count = len(decks)
@@ -156,6 +154,7 @@ async def pull_decks(interaction: discord.Interaction):
         for link in re.findall(r"(?P<url>https?://[^\s]+)", message.content):
             if link not in [deck.decklist for deck in decks]:
                 commander = deckstats.get_commander_name(link)
+                print(link,commander)
                 decks.append(deckstats.Deck(
                     owner=message.author.name,
                     commander=commander,
@@ -165,10 +164,10 @@ async def pull_decks(interaction: discord.Interaction):
     number_of_new_decks = len(decks) - start_count
     if number_of_new_decks > 0:
         deckstats.save_to_json(decks, 'decks.json')
-        await interaction.edit_original_response(
-            f'{number_of_new_decks} new deck(s) added to deck database')
+        await interaction.response.send_message(
+            f'{number_of_new_decks} new deck(s) added to deck database', ephemeral=True)
     else:
-        await interaction.edit_original_response('No new decklists found')
+        await interaction.response.send_message('No new decklists links found', ephemeral=True)
     
 
 @client.tree.command()

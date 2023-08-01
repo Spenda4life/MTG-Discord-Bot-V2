@@ -158,5 +158,55 @@
             "Evelyn, the Covetous",
             "Mahadi, Emporium Master"
         ]
+    },
+    {
+        "date": "07-23-2023",
+        "winner": "Akiri, Fearless Voyager",
+        "decks": [
+            "Be'lakor, the Dark Master",
+            "Maarika, Brutal Gladiator",
+            "Akiri, Fearless Voyager",
+            "Miirym, Sentinel Wyrm"
+        ]
+    },
+    {
+        "date": "07-23-2023",
+        "winner": "Be'lakor, the Dark Master",
+        "decks": [
+            "Maarika, Brutal Gladiator",
+            "Be'lakor, the Dark Master",
+            "Miirym, Sentinel Wyrm",
+            "Grenzo, Dungeon Warden"
+        ]
+    },
+    {
+        "date": "07-30-2023",
+        "winner": "Breena, the Demagogue",
+        "decks": [
+            "Breena, the Demagogue",
+            "Rona, Herald of Invasion",
+            "Saruman, the White Hand",
+            "Zevlor, Elturel Exile"
+        ]
+    },
+    {
+        "date": "07-30-2023",
+        "winner": "Grenzo, Dungeon Warden",
+        "decks": [
+            "Karlach, Fury of Avernus / Guild Artisan",
+            "Be'lakor, the Dark Master",
+            "Grenzo, Dungeon Warden",
+            "Abaddon the Despoiler"
+        ]
+    },
+    {
+        "date": "07-30-2023",
+        "winner": "Grenzo, Dungeon Warden",
+        "decks": [
+            "Maarika, Brutal Gladiator",
+            "Be'lakor, the Dark Master",
+            "Abaddon the Despoiler",
+            "Grenzo, Dungeon Warden"
+        ]
     }
 ]

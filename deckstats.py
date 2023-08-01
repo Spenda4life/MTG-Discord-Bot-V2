@@ -105,7 +105,7 @@ def get_commander_name(link: str):
     if response.status_code//100 != 2:
         return response
     
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(response.content, 'html.parser')
 
     if link.startswith('https://www.mtggoldfish.com'):
         # For mtggoldfish links, the commander is in an input element
