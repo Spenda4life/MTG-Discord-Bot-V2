@@ -8,7 +8,7 @@ import random
 
 class Player:
     def __init__(self, name, rating=1500, 
-                 gold=0, wins=0, losses=0):
+                 gold=300, wins=0, losses=0):
         self.name = name
         self.rating = rating
         self.gold = gold
@@ -58,7 +58,7 @@ def load_json_data(file_name, cls):
 def save_to_json(objects: list, file_name):
     """Save list of class objects to json file"""
     path = f'{os.path.dirname(__file__)}\{file_name}'
-    write_file([deck.__dict__ for deck in objects], path)
+    write_file([x.__dict__ for x in objects], path)
 
 
 def read_file(path):
@@ -134,14 +134,14 @@ def get_commander_name(link: str):
         return 'I can only process www.mtggoldfish.com or www.moxfield.com links at this time.'
 
 
-def roll(dice: str):
-    """Rolls a dice in NdN format."""
-    try:
-        rolls, limit = map(int, dice.split('d'))
-    except Exception:
-        return 'Format has to be in NdN!'
+# def roll(dice: str):
+#     """Rolls a dice in NdN format."""
+#     try:
+#         rolls, limit = map(int, dice.split('d'))
+#     except Exception:
+#         return 'Format has to be in NdN!'
 
-    return ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
+#     return ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
 
 
 def random_decks(decks: list[object], players=None):
@@ -169,6 +169,13 @@ def random_decks(decks: list[object], players=None):
 if __name__=='__main__':
     print('***Testing***')
 
+    players = load_json_data('players.json', Player)
     decks = load_json_data('decks.json', Deck)
     games = load_json_data('games.json', Game)
-    print(f'Successfully loaded {len(decks)} decks and {len(games)} games from database.')
+    print(f'Successfully loaded {len(players)} players, {len(decks)} decks, and {len(games)} games from the database.')
+
+    # players = []
+    # for owner in set([x.owner for x in decks]):
+    #     players.append(Player(owner))
+
+    # save_to_json(players,'players.json')

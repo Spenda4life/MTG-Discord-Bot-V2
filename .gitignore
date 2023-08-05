@@ -1,3 +1,5 @@
 config.py
 test.py
 *.pyc
+scryfall_data.json
+dargo--jeska-20230803-163928.txt
