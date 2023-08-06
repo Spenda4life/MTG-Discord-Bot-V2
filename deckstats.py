@@ -134,6 +134,14 @@ def get_commander_name(link: str):
         return 'I can only process www.mtggoldfish.com or www.moxfield.com links at this time.'
 
 
+def random_decks(decks: list[object], players=None):
+    """Returns a random deck for each player"""
+    if players == None:
+        players = random.sample(list(set([x.owner for x in decks])), k=4)
+
+    return [random.choice([deck for deck in decks if deck.owner == player]) for player in players]
+
+
 # def roll(dice: str):
 #     """Rolls a dice in NdN format."""
 #     try:
@@ -142,14 +150,6 @@ def get_commander_name(link: str):
 #         return 'Format has to be in NdN!'
 
 #     return ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
-
-
-def random_decks(decks: list[object], players=None):
-    """Returns a random deck for each player"""
-    if players == None:
-        players = random.sample(list(set([x.owner for x in decks])), k=4)
-
-    return [random.choice([deck for deck in decks if deck.owner == player]) for player in players]
 
 
 # def scryfall_search(query, limit):
@@ -164,6 +164,27 @@ def random_decks(decks: list[object], players=None):
 #         text = requests.get(f'https://api.scryfall.com/cards/{card}?format=text&pretty=true')
 #         output += f'{text.text}\n\n'
 #     return output[:2000]
+
+
+# def scryfall_bulk_data():
+#     """Use scryfall API to pull bulk card data"""
+
+#     headers = {'User-Agent': 'python-requests/2.28.2'}
+#     link = 'https://api.scryfall.com/bulk-data'
+#     response = requests.get(link, headers=headers)
+
+#     if response.status_code//100 != 2:
+#         print(response.status_code)
+
+#     response_json = json.loads(response.text)
+#     oracle_cards = [x for x in response_json['data'] if x['type'] == 'oracle_cards'][0]
+#     download_uri = oracle_cards['download_uri']
+#     bulk_data_response = requests.get(download_uri, headers=headers)
+
+#     file_name = 'scryfall_data.json'
+#     path = f'{os.path.dirname(__file__)}\{file_name}'
+#     with open(path, 'wb') as file:
+#             file.write(bulk_data_response.content)
 
 
 if __name__=='__main__':
