@@ -41,8 +41,9 @@ class PlayerSelect(discord.ui.Select):
 
 class DeckSelect(discord.ui.Select):
     def __init__(self, player, parent_view):
-        player_decks = [x.commander for x in parent_view.decks if x.owner == player]
-        options = [discord.SelectOption(label=deck) for deck in player_decks]
+        player_decks = [x for x in parent_view.decks if x.owner == player]
+        # options = [discord.SelectOption(label=f'{deck.commander} ({deck.owner})') for deck in player_decks]
+        options = [discord.SelectOption(label=deck.commander) for deck in player_decks]
         super().__init__(placeholder=f"Select a {player} deck", options=options, min_values=1, max_values=1)
         self.parent_view = parent_view
 
@@ -89,12 +90,15 @@ class RegisterGameView(discord.ui.View):
         '''Add dropdown to select the winner'''
 
         # Set attribute to use in log_game method and WinnerSelect class
-        self.selected_decks = [x.values[0] for x in self.deck_select]
-        
+        # self.selected_decks = [x.values[0] for x in self.deck_select]
+        # Changed to format deck as commander (owner) to solve repeat commander issues
+        self.selected_decks =  [f'{value} ({self.player_select.values[indx]})' 
+                                for indx,value in enumerate([x.values[0] for x in self.deck_select])]
+
         # Remove dropdowns and update view
         for ea in self.deck_select:
             self.remove_item(ea)
-
+ 
         # Add winner dropdown
         self.winner_select = WinnerSelect(self)
         self.add_item(self.winner_select)
