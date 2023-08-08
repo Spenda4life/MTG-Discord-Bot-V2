@@ -51,19 +51,19 @@ def register_game(date, winner, decks):
 
 def load_json_data(file_name, cls):
     """Load json data to class objects"""
-    path = f'{os.path.dirname(__file__)}\{file_name}'
+    path = os.path.join(os.path.dirname(__file__), file_name)
     return [cls(**obj) for obj in read_file(path)]
 
 
 def save_to_json(objects: list, file_name):
     """Save list of class objects to json file"""
-    path = f'{os.path.dirname(__file__)}\{file_name}'
+    path = os.path.join(os.path.dirname(__file__), file_name)
     write_file([x.__dict__ for x in objects], path)
 
 
 def read_file(path):
     '''Read json data from a file'''
-    with open(path, 'r') as f:
+    with open(path, 'r', encoding="utf-8") as f:
         data = json.load(f)
     return data
 
