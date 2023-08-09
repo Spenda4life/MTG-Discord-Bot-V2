@@ -38,6 +38,12 @@ class Game:
 
     def __str__(self):
         return f"**{self.winner} (Win)**  vs  {'  vs  '.join([x for x in self.decks if x != self.winner])}"
+    
+
+class Card:
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 
 def register_game(date, winner, decks):
@@ -142,49 +148,87 @@ def random_decks(decks: list[object], players=None):
     return [random.choice([deck for deck in decks if deck.owner == player]) for player in players]
 
 
-# def roll(dice: str):
-#     """Rolls a dice in NdN format."""
-#     try:
-#         rolls, limit = map(int, dice.split('d'))
-#     except Exception:
-#         return 'Format has to be in NdN!'
+def deck_stats(deck):
+    """Returns basic stats like average cmc and total price of a deck"""
 
-#     return ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
+    def card_price(card):
+        values = [float(card.prices[key]) for key in ['usd', 'usd_foil', 'usd_etched'] 
+                  if card.prices[key] is not None]
+        if values:
+            return min(values)
+        else:
+            return 0
+    
+    basic_land_count = 0
+    cmc = 0
+    price = 0
+    edhrec_rank = 0
+    for card in deck:
+        if card.type_line.startswith('Basic Land'):
+            basic_land_count += 1
+        else:
+            cmc += card.cmc
+            price += card_price(card)
+            edhrec_rank += getattr(card, 'edhrec_rank', 0)
+
+    return (f'Average cmc: {round(cmc/(len(deck) - basic_land_count), 2)}\n'
+          f'EDHrec score: {int(edhrec_rank/(len(deck) - basic_land_count))}\n'
+          f'Total price: {int(price)}')
 
 
-# def scryfall_search(query, limit):
-#     # delay for scryfall API rate limit
-#     time.sleep(0.05) 
-#     # Format text for query url and send the GET request
-#     query.replace(' ', '+').replace(':', '%3A')
-#     response = requests.get(f'https://api.scryfall.com/cards/search?q={query}')
-#     response_json = response.json()
-#     output = ''
-#     for card in [card['id'] for card in response_json['data']][:limit]:
-#         text = requests.get(f'https://api.scryfall.com/cards/{card}?format=text&pretty=true')
-#         output += f'{text.text}\n\n'
-#     return output[:2000]
+def process_decklist(decklist_file, card_database):
+    """Takes a moxfield decklist export and scryfall card data and returns a list of card objects"""
+    path = os.path.join(os.path.dirname(__file__), decklist_file)
+    decklist = []
+    with open(path) as f:
+        for line in f:
+            decklist.append(line.strip().split(' ', 1)[1])
+    return [card for card in card_database if card.name in decklist]
 
 
-# def scryfall_bulk_data():
-#     """Use scryfall API to pull bulk card data"""
+def roll(dice: str):
+    """Rolls a dice in NdN format."""
+    try:
+        rolls, limit = map(int, dice.split('d'))
+    except Exception:
+        return 'Format has to be in NdN!'
 
-#     headers = {'User-Agent': 'python-requests/2.28.2'}
-#     link = 'https://api.scryfall.com/bulk-data'
-#     response = requests.get(link, headers=headers)
+    return ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
 
-#     if response.status_code//100 != 2:
-#         print(response.status_code)
 
-#     response_json = json.loads(response.text)
-#     oracle_cards = [x for x in response_json['data'] if x['type'] == 'oracle_cards'][0]
-#     download_uri = oracle_cards['download_uri']
-#     bulk_data_response = requests.get(download_uri, headers=headers)
+def scryfall_search(query, limit):
+    # delay for scryfall API rate limit
+    time.sleep(0.05) 
+    # Format text for query url and send the GET request
+    query.replace(' ', '+').replace(':', '%3A')
+    response = requests.get(f'https://api.scryfall.com/cards/search?q={query}')
+    response_json = response.json()
+    output = ''
+    for card in [card['id'] for card in response_json['data']][:limit]:
+        text = requests.get(f'https://api.scryfall.com/cards/{card}?format=text&pretty=true')
+        output += f'{text.text}\n\n'
+    return output[:2000]
 
-#     file_name = 'scryfall_data.json'
-#     path = f'{os.path.dirname(__file__)}\{file_name}'
-#     with open(path, 'wb') as file:
-#             file.write(bulk_data_response.content)
+
+def scryfall_bulk_data():
+    """Use scryfall API to pull bulk card data"""
+
+    headers = {'User-Agent': 'python-requests/2.28.2'}
+    link = 'https://api.scryfall.com/bulk-data'
+    response = requests.get(link, headers=headers)
+
+    if response.status_code//100 != 2:
+        print(response.status_code)
+
+    response_json = json.loads(response.text)
+    oracle_cards = [x for x in response_json['data'] if x['type'] == 'oracle_cards'][0]
+    download_uri = oracle_cards['download_uri']
+    bulk_data_response = requests.get(download_uri, headers=headers)
+
+    file_name = 'scryfall_data.json'
+    path = f'{os.path.dirname(__file__)}\{file_name}'
+    with open(path, 'wb') as file:
+            file.write(bulk_data_response.content)
 
 
 if __name__=='__main__':
@@ -195,8 +239,12 @@ if __name__=='__main__':
     games = load_json_data('games.json', Game)
     print(f'Successfully loaded {len(players)} players, {len(decks)} decks, and {len(games)} games from the database.')
 
-    # players = []
-    # for owner in set([x.owner for x in decks]):
-    #     players.append(Player(owner))
+    # Load scryfall card database
+    cards = load_json_data('scryfall_data.json', Card)
 
-    # save_to_json(players,'players.json')
+    # Print stats for each decklist
+    decklists = ['grismold-3172023-20230729-165034.txt',
+                  'dargo--jeska-20230803-163928.txt']
+    for decklist_file in decklists:
+        print(decklist_file)
+        print(deck_stats(process_decklist(decklist_file, cards)))
