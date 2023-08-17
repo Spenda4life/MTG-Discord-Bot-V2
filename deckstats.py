@@ -198,7 +198,7 @@ def roll(dice: str):
 
 def scryfall_search(query, limit):
     # delay for scryfall API rate limit
-    time.sleep(0.05) 
+    # time.sleep(0.05) 
     # Format text for query url and send the GET request
     query.replace(' ', '+').replace(':', '%3A')
     response = requests.get(f'https://api.scryfall.com/cards/search?q={query}')
