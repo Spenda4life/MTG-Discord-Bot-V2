@@ -510,5 +510,29 @@
         "rating": 1500,
         "wins": 0,
         "losses": 0
+    },
+    {
+        "owner": "ostertoaster10",
+        "commander": "Abaddon the Despoiler",
+        "decklist": null,
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
+    },
+    {
+        "owner": "spenda4life",
+        "commander": "Rona, Herald of Invasion",
+        "decklist": null,
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
+    },
+    {
+        "owner": "bonaparte_jones",
+        "commander": "Saruman, the White Hand",
+        "decklist": null,
+        "rating": 1500,
+        "wins": 0,
+        "losses": 0
     }
 ]
