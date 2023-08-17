@@ -17,7 +17,7 @@ class Player:
 
 
 class Deck:
-    def __init__(self, owner, commander, decklist, 
+    def __init__(self, owner, commander, decklist=None, 
                  rating=1500, wins=0, losses=0):
         self.owner = owner
         self.commander = commander
