@@ -197,8 +197,6 @@ def roll(dice: str):
 
 
 def scryfall_search(query, limit):
-    # delay for scryfall API rate limit
-    # time.sleep(0.05) 
     # Format text for query url and send the GET request
     query.replace(' ', '+').replace(':', '%3A')
     response = requests.get(f'https://api.scryfall.com/cards/search?q={query}')
@@ -231,20 +229,48 @@ def scryfall_bulk_data():
             file.write(bulk_data_response.content)
 
 
-if __name__=='__main__':
-    print('***Testing***')
+def load_game_database():
+    """Load players, decks, and games from saved json files"""
+
+    def get_deck(deck_name: str):
+        for deck in decks:
+            if f'{deck.commander} ({deck.owner})' == deck_name:
+                return deck
+        
+    def get_player(player_name: str):
+        for player in players:
+            if player.name == player_name:
+                return player
 
     players = load_json_data('players.json', Player)
     decks = load_json_data('decks.json', Deck)
     games = load_json_data('games.json', Game)
+
+    # replace text with deck objects for each game
+    for game in games:
+        game.winner = get_deck(game.winner)
+        game.decks = [get_deck(deck_name) for deck_name in game.decks] 
+
+    # replace owner with player object for each deck
+    for deck in decks:
+        deck.owner = get_player(deck.owner)
+        deck.owner.gold = 500
+
+    return players, decks, games
+
+    
+if __name__=='__main__':
+    print('***Testing***')
+
+    players, decks, games = load_game_database()
     print(f'Successfully loaded {len(players)} players, {len(decks)} decks, and {len(games)} games from the database.')
 
-    # Load scryfall card database
-    cards = load_json_data('scryfall_data.json', Card)
+    # # Load scryfall card database
+    # cards = load_json_data('scryfall_data.json', Card)
 
-    # Print stats for each decklist
-    decklists = ['grismold-3172023-20230729-165034.txt',
-                  'dargo--jeska-20230803-163928.txt']
-    for decklist_file in decklists:
-        print(decklist_file)
-        print(deck_stats(process_decklist(decklist_file, cards)))
+    # # Print stats for each decklist
+    # decklists = ['grismold-3172023-20230729-165034.txt',
+    #               'dargo--jeska-20230803-163928.txt']
+    # for decklist_file in decklists:
+    #     print(decklist_file)
+    #     print(deck_stats(process_decklist(decklist_file, cards)))
