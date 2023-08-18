@@ -232,31 +232,56 @@ def scryfall_bulk_data():
 def load_game_database():
     """Load players, decks, and games from saved json files"""
 
-    def get_deck(deck_name: str):
-        for deck in decks:
-            if f'{deck.commander} ({deck.owner})' == deck_name:
-                return deck
-        
-    def get_player(player_name: str):
-        for player in players:
-            if player.name == player_name:
-                return player
-
     players = load_json_data('players.json', Player)
     decks = load_json_data('decks.json', Deck)
     games = load_json_data('games.json', Game)
 
     # replace text with deck objects for each game
     for game in games:
-        game.winner = get_deck(game.winner)
-        game.decks = [get_deck(deck_name) for deck_name in game.decks] 
+        game.winner = next((deck for deck in decks if f'{deck.commander} ({deck.owner})' == game.winner), None)
+        game.decks = [next((deck for deck in decks if f'{deck.commander} ({deck.owner})' == deck_name), None) 
+                      for deck_name in game.decks] 
 
     # replace owner with player object for each deck
     for deck in decks:
-        deck.owner = get_player(deck.owner)
+        deck.owner = next((player for player in players if player.name == deck.owner), None)
         deck.owner.gold = 500
 
     return players, decks, games
+
+
+def calculate_stats(players, decks, games):
+
+    k_factor = 133
+    d_factor = 200
+    gold_ante = 25
+
+    for game in games:
+
+        winner_indx = game.decks.index(game.winner)
+        new_deck_ratings = elo(k_factor, d_factor, [deck.rating for deck in game.decks], winner_indx)
+        new_player_ratings = elo(k_factor, d_factor, [deck.owner.rating for deck in game.decks], winner_indx)
+
+        for indx, deck in enumerate(game.decks):
+            deck.rating = new_deck_ratings[indx]
+            deck.owner.rating = new_player_ratings[indx]
+            if indx == winner_indx:
+                deck.wins += 1
+                deck.owner.wins += 1
+                deck.owner.gold += gold_ante *3
+            else:
+                deck.losses += 1
+                deck.owner.losses += 1
+                deck.owner.gold -= gold_ante
+
+    # deck ratings
+    active_decks = [x for x in decks if x.wins + x.losses > 0]
+    for rank, deck in enumerate(sorted(active_decks, key=lambda x: x.rating, reverse=True)):
+        print(f'{rank + 1} {deck.rating} {deck.commander} ({deck.owner.name}) {deck.wins}-{deck.losses}')
+
+    # player's gold
+    for rank, player in enumerate(sorted(players, key=lambda x: x.gold, reverse=True)):
+        print(f'{rank + 1} {player.gold} {player.name} {player.wins}-{player.losses}')
 
     
 if __name__=='__main__':
@@ -264,6 +289,8 @@ if __name__=='__main__':
 
     players, decks, games = load_game_database()
     print(f'Successfully loaded {len(players)} players, {len(decks)} decks, and {len(games)} games from the database.')
+
+    calculate_stats(players, decks, games)
 
     # # Load scryfall card database
     # cards = load_json_data('scryfall_data.json', Card)
