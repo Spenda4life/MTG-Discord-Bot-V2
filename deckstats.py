@@ -77,7 +77,8 @@ def read_file(path):
 def write_file(data, path):
     '''Write json data to a file'''
     with open(path, 'w') as f:
-        f.write(json.dumps(data, indent=4))
+        # f.write(json.dumps(data, indent=4))
+        f.write(json.dumps(data))
 
 
 def elo(k_factor: int, d_factor: int, ratings: list, winner_indx: int):
@@ -146,44 +147,6 @@ def random_decks(decks: list[object], players=None):
         players = random.sample(list(set([x.owner for x in decks])), k=4)
 
     return [random.choice([deck for deck in decks if deck.owner == player]) for player in players]
-
-
-def deck_stats(deck):
-    """Returns basic stats like average cmc and total price of a deck"""
-
-    def card_price(card):
-        values = [float(card.prices[key]) for key in ['usd', 'usd_foil', 'usd_etched'] 
-                  if card.prices[key] is not None]
-        if values:
-            return min(values)
-        else:
-            return 0
-    
-    basic_land_count = 0
-    cmc = 0
-    price = 0
-    edhrec_rank = 0
-    for card in deck:
-        if card.type_line.startswith('Basic Land'):
-            basic_land_count += 1
-        else:
-            cmc += card.cmc
-            price += card_price(card)
-            edhrec_rank += getattr(card, 'edhrec_rank', 0)
-
-    return (f'Average cmc: {round(cmc/(len(deck) - basic_land_count), 2)}\n'
-          f'EDHrec score: {int(edhrec_rank/(len(deck) - basic_land_count))}\n'
-          f'Total price: {int(price)}')
-
-
-def process_decklist(decklist_file, card_database):
-    """Takes a moxfield decklist export and scryfall card data and returns a list of card objects"""
-    path = os.path.join(os.path.dirname(__file__), decklist_file)
-    decklist = []
-    with open(path) as f:
-        for line in f:
-            decklist.append(line.strip().split(' ', 1)[1])
-    return [card for card in card_database if card.name in decklist]
 
 
 def roll(dice: str):
@@ -284,20 +247,90 @@ def calculate_stats(players, decks, games):
         print(f'{rank + 1} {player.gold} {player.name} {player.wins}-{player.losses}')
 
     
+def deck_stats(deck):
+    """Returns basic stats like average cmc and total price of a deck"""
+
+    # def card_price(card):
+    #     values = [float(card.prices[key]) for key in ['usd', 'usd_foil', 'usd_etched'] 
+    #               if card.prices[key] is not None]
+    #     if values:
+    #         return min(values)
+    #     else:
+    #         return 0
+
+    count = 0
+    cmc = 0
+    # price = 0
+    edhrec_rank = 0
+    mana_symbols = [0, 0, 0, 0, 0] # WUBRG pip count
+    for card in deck:
+        if not card.type_line.startswith('Basic Land'):
+            count += 1
+            cmc += getattr(card, 'cmc', 0)
+            # price += card_price(card)
+            edhrec_rank += getattr(card, 'edhrec_rank', 0)
+            # mana_symbols = [sum(x) for x in zip(mana_symbols, pips(card))]
+            pips = [card.mana_cost.count(x) for x in ("{W}", "{U}", "{B}","{R}","{G}")]
+            mana_symbols = [sum(x) for x in zip(mana_symbols, pips)]
+
+    average_cmc = round(cmc/count, 2)
+    edhrec_score = int(edhrec_rank/count)
+    # total_price = int(price)
+
+    return average_cmc, edhrec_score, mana_symbols
+
+
+def process_decklists(decklists_directory='decklists', card_database='scryfall_data.json'):
+    """Get moxfield decklists from directory and return card objects"""
+
+    # Load scryfall card database
+    cards = load_json_data(card_database, Card)
+
+    decklists = []
+    for file_name in os.listdir(decklists_directory):
+        decklists.append({'name': file_name, 'cards': []})
+        file_path = os.path.join(decklists_directory, file_name)
+        with open(file_path) as f:
+            for line in f:
+                line = line.strip('\n')
+                if line == 'SIDEBOARD:':
+                    break
+                if line != '':
+                    split_line = line.strip().split(' ', 1)
+                    qty = split_line[0]
+                    card_name = split_line[1]
+                    card_object = next((card for card in cards if card.name == card_name), None)
+                    if card_object:
+                        for _ in range(int(qty)):
+                            decklists[-1]['cards'].append(card_object)
+
+    return decklists
+
+
 if __name__=='__main__':
     print('***Testing***')
 
-    players, decks, games = load_game_database()
-    print(f'Successfully loaded {len(players)} players, {len(decks)} decks, and {len(games)} games from the database.')
+    # # load data and print stats
+    # players, decks, games = load_game_database()
+    # calculate_stats(players, decks, games)
+   
 
-    calculate_stats(players, decks, games)
+    stats = []
+    for deck in process_decklists():
+        cmc, edh_score, pips = deck_stats(deck['cards'])
+        stats.append({'name': deck['name'],
+                      'average_cmc': cmc,
+                      'edh_score': edh_score,
+                      'pips': pips})
+        
+    write_file(stats, 'stats.json')
+        
+    list_of_pips = [x['pips'] for x in stats]
+    result = [sum(values) for values in zip(*(x['pips'] for x in stats))]
+    print(result)
 
-    # # Load scryfall card database
-    # cards = load_json_data('scryfall_data.json', Card)
+    # for i, v in enumerate(sorted(stats, key=lambda x: x['edh_score'], reverse=True)):
+    #     print(f'{i+1}: {v}')
 
-    # # Print stats for each decklist
-    # decklists = ['grismold-3172023-20230729-165034.txt',
-    #               'dargo--jeska-20230803-163928.txt']
-    # for decklist_file in decklists:
-    #     print(decklist_file)
-    #     print(deck_stats(process_decklist(decklist_file, cards)))
+    # for i, v in enumerate(sorted(stats, key=lambda x: x['average_cmc'], reverse=True)):
+    #     print(f'{i+1}: {v}')
