@@ -77,8 +77,8 @@ def read_file(path):
 def write_file(data, path):
     '''Write json data to a file'''
     with open(path, 'w') as f:
-        # f.write(json.dumps(data, indent=4))
-        f.write(json.dumps(data))
+        f.write(json.dumps(data, indent=4))
+        # f.write(json.dumps(data))
 
 
 def elo(k_factor: int, d_factor: int, ratings: list, winner_indx: int):
